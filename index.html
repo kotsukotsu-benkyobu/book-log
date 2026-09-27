@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ことばの栞</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF1F4; --card:#FFFFFF; --ink:#1D2433; --muted:#5E6778; --line:#D4DAE2;
+  --read:#3F4FA0; --life:#3E7D5A; --idea:#B77A14;
+  --btn:#1D2433; --btnInk:#FFFFFF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#161A22; --card:#1F2430; --ink:#E6E9EF; --muted:#9AA3B2; --line:#323948;
+    --read:#8E9BEA; --life:#79C298; --idea:#E3AE52; --btn:#E6E9EF; --btnInk:#161A22;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#161A22; --card:#1F2430; --ink:#E6E9EF; --muted:#9AA3B2; --line:#323948;
+  --read:#8E9BEA; --life:#79C298; --idea:#E3AE52; --btn:#E6E9EF; --btnInk:#161A22;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 120px}
+h1{font-family:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;font-weight:700;
+  font-size:1.9rem;letter-spacing:.08em;margin:8px 0 2px}
+.sub{color:var(--muted);font-size:.85rem;margin:0 0 20px}
+.status{font-size:.75rem;color:var(--muted);margin-left:6px}
+
+/* composer */
+.composer{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kinds{display:flex;gap:8px;margin-bottom:12px}
+.kind{flex:1;border:1.5px solid var(--line);background:transparent;color:var(--ink);
+  border-radius:999px;padding:8px 0;font:inherit;font-weight:500;cursor:pointer}
+.kind[aria-pressed="true"][data-k="読書"]{background:var(--read);border-color:var(--read);color:#fff}
+.kind[aria-pressed="true"][data-k="日常"]{background:var(--life);border-color:var(--life);color:#fff}
+.kind[aria-pressed="true"][data-k="気づき"]{background:var(--idea);border-color:var(--idea);color:#fff}
+label{display:block;font-size:.8rem;color:var(--muted);margin:10px 0 4px}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{resize:vertical;min-height:84px}
+#phrase{font-family:"Shippori Mincho","Hiragino Mincho ProN",serif;font-size:1.05rem}
+.row{display:flex;gap:8px}.row>div:first-child{flex:1}.row>div:last-child{width:90px}
+.primary{width:100%;margin-top:14px;background:var(--btn);color:var(--btnInk);border:0;
+  border-radius:10px;padding:12px;font:inherit;font-weight:700;cursor:pointer}
+.primary:disabled{opacity:.4}
+.editing-note{font-size:.8rem;color:var(--muted);margin-top:8px;display:none}
+.editing-note button{background:none;border:0;color:var(--read);font:inherit;text-decoration:underline;cursor:pointer}
+
+/* filters */
+.bar{display:flex;align-items:center;gap:6px;margin:26px 0 10px;flex-wrap:wrap}
+.filter{background:transparent;border:0;color:var(--muted);font:inherit;padding:4px 8px;border-radius:6px;cursor:pointer}
+.filter[aria-pressed="true"]{color:var(--ink);font-weight:700;background:var(--card)}
+.count{margin-left:auto;font-size:.8rem;color:var(--muted)}
+#q{margin-bottom:10px}
+
+/* entries: 栞 */
+.list{display:flex;flex-direction:column;gap:12px}
+.entry{position:relative;background:var(--card);border:1px solid var(--line);
+  border-radius:4px 12px 12px 4px;padding:14px 14px 12px 22px}
+.entry::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;border-radius:4px 0 0 4px;background:var(--c)}
+.entry[data-k="読書"]{--c:var(--read)}.entry[data-k="日常"]{--c:var(--life)}.entry[data-k="気づき"]{--c:var(--idea)}
+.meta{display:flex;gap:8px;align-items:baseline;font-size:.78rem;color:var(--muted)}
+.meta .k{color:var(--c);font-weight:700}
+.book{font-weight:700;font-size:.9rem;margin-top:2px}
+.phrase{font-family:"Shippori Mincho","Hiragino Mincho ProN",serif;font-size:1.12rem;line-height:1.9;
+  margin:8px 0 4px;white-space:pre-wrap}
+.phrase::before{content:"「"}.phrase::after{content:"」"}
+.note{white-space:pre-wrap;font-size:.95rem}
+.acts{display:flex;gap:4px;margin-top:8px;justify-content:flex-end}
+.acts button{background:transparent;border:1px solid var(--line);color:var(--muted);font:inherit;font-size:.78rem;
+  border-radius:8px;padding:4px 10px;cursor:pointer}
+.acts button.danger{border-color:#C0392B;color:#C0392B;font-weight:700}
+.memo-hint{font-size:.78rem;color:var(--muted);margin:8px 0 0}
+.backup{margin-top:32px;padding-top:16px;border-top:1px solid var(--line)}
+.backup h2{font-size:.9rem;margin:0 0 4px}
+.backup p{font-size:.8rem;color:var(--muted);margin:0 0 10px}
+.brow2{display:flex;gap:8px;flex-wrap:wrap}
+.brow2 .ghost{font-size:.85rem;text-align:center;flex:1}
+.pick{position:absolute;top:12px;right:12px;width:22px;height:22px;accent-color:var(--ink)}
+.photoPick{display:none;margin-top:10px}
+.photoPick.on{display:block}
+.addPhoto{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--line);border-radius:10px;
+  padding:8px 14px;color:var(--muted);font-size:.9rem;cursor:pointer}
+.addPhoto input{display:none}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.thumb{position:relative;width:76px;height:76px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;border:0;
+  background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:22px;padding:0;cursor:pointer}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin:10px 0 4px}
+.photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;display:block;cursor:zoom-in}
+.photos img.one{aspect-ratio:auto;max-height:320px;grid-column:1/-1}
+#viewer{padding:0;background:#000;width:auto;max-width:96vw}
+#viewer img{display:block;max-width:96vw;max-height:88vh}
+/* tabs */
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:16px}
+.tab{flex:1;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);font:inherit;font-weight:700;
+  padding:10px 0;cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+[hidden]{display:none!important}
+/* habit */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-family:"Shippori Mincho","Hiragino Mincho ProN",serif;font-size:1.9rem;line-height:1.2;color:var(--read)}
+.stat span{font-size:.75rem;color:var(--muted)}
+.heat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.heat h2,.progress h2{font-size:.85rem;margin:0 0 8px;font-weight:700}
+.grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;overflow-x:auto}
+.cell{width:100%;min-width:14px;aspect-ratio:1;border-radius:3px;background:var(--line)}
+.cell[data-l="1"]{background:color-mix(in srgb,var(--read) 35%,var(--line))}
+.cell[data-l="2"]{background:color-mix(in srgb,var(--read) 65%,var(--line))}
+.cell[data-l="3"]{background:var(--read)}
+.cell.today{outline:2px solid var(--ink);outline-offset:-2px}
+.legend{display:flex;gap:4px;align-items:center;justify-content:flex-end;font-size:.7rem;color:var(--muted);margin-top:6px}
+.legend .cell{width:12px;min-width:12px}
+.cheer{font-size:.85rem;color:var(--muted);margin:0 0 12px;text-align:center}
+.progress{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+.brow{display:flex;justify-content:space-between;gap:8px;font-size:.9rem;padding:4px 0;border-top:1px solid var(--line)}
+.brow:first-of-type{border-top:0}
+.brow span:last-child{color:var(--muted);white-space:nowrap}
+details summary{cursor:pointer;color:var(--muted);font-size:.85rem;margin-top:12px}
+.logline{font-size:.95rem;margin-top:4px}
+.logline b{color:var(--read)}
+.empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:.9rem}
+
+/* share bar */
+.share{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.share .in{max-width:640px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.share .primary{margin:0;flex:1}
+.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 12px;font:inherit;cursor:pointer;white-space:nowrap}
+
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--btn);color:var(--btnInk);
+  padding:8px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+dialog{border:0;border-radius:14px;padding:16px;width:min(92vw,560px);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog textarea{min-height:240px;font-size:.9rem}
+:focus-visible{outline:2px solid var(--read);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ことばの栞</h1>
+  <p class="sub">残したいフレーズと気づきを、ひとつずつ。<span class="status" id="status"></span></p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabMemo" aria-selected="true">メモ</button>
+    <button class="tab" role="tab" id="tabHabit" aria-selected="false">読書習慣</button>
+  </div>
+
+  <section id="habitPanel" hidden aria-label="読書習慣">
+    <div class="stats">
+      <div class="stat"><b id="sStreak">0</b><span>連続日数</span></div>
+      <div class="stat"><b id="sDays">0</b><span>今月読んだ日</span></div>
+      <div class="stat"><b id="sPages">0</b><span>今月のページ</span></div>
+    </div>
+    <p class="cheer" id="cheer"></p>
+    <div class="heat"><h2>読んだ日のカレンダー（直近16週）</h2><div class="grid" id="grid"></div>
+      <div class="legend">少<span class="cell"></span><span class="cell" data-l="1"></span><span class="cell" data-l="2"></span><span class="cell" data-l="3"></span>多</div></div>
+    <div class="composer">
+      <div class="row">
+        <div><label for="hBook">読んでいる本</label><input id="hBook" list="books" autocomplete="off"></div>
+        <div><label for="hPages">ページ数</label><input id="hPages" inputmode="numeric" placeholder="例 15"></div>
+      </div>
+      <label for="hDate">読んだ日</label><input id="hDate" type="date">
+      <details id="hMore"><summary>フレーズや気づきも書く（書かなくてOK）</summary>
+        <label for="hPhrase">気に入ったフレーズ</label><textarea id="hPhrase" rows="2"></textarea>
+        <label for="hNote">気づき・思ったこと</label><textarea id="hNote" rows="2"></textarea>
+      </details>
+      <button class="primary" id="hSave">今日の読書を記録</button>
+      <p class="editing-note" id="hEditingNote">記録を編集中です。<button id="hCancel">やめる</button></p>
+    </div>
+    <div class="progress"><h2>本ごとの読んだページ</h2><div id="bookList"></div></div>
+  </section>
+
+  <section class="composer" id="memoPanel" aria-label="記録する">
+    <div class="kinds" role="group" aria-label="種類">
+      <button class="kind" data-k="読書" aria-pressed="true">読書</button>
+      <button class="kind" data-k="日常" aria-pressed="false">日常</button>
+      <button class="kind" data-k="気づき" aria-pressed="false">気づき</button>
+    </div>
+    <div id="bookFields" class="row">
+      <div><label for="book">本のタイトル</label><input id="book" list="books" autocomplete="off"><datalist id="books"></datalist></div>
+      <div><label for="page">ページ</label><input id="page" inputmode="numeric"></div>
+    </div>
+    <label for="phrase" id="phraseLabel">気に入ったフレーズ</label>
+    <textarea id="phrase" rows="3"></textarea>
+    <label for="note">気づき・思ったこと</label>
+    <textarea id="note" rows="3"></textarea>
+    <div class="photoPick" id="photoPick">
+      <label class="addPhoto"><input type="file" id="photoIn" accept="image/*" multiple>＋ 写真を追加</label>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <p class="memo-hint">メモは読書習慣のカレンダーやページ数には反映されません。昔の読書の記憶なども気軽に残せます。</p>
+    <button class="primary" id="save">記録する</button>
+    <p class="editing-note" id="editingNote">記録を編集中です。<button id="cancelEdit">やめる</button></p>
+  </section>
+
+  <div class="bar" role="group" aria-label="絞り込み">
+    <button class="filter" data-f="すべて" aria-pressed="true">すべて</button>
+    <button class="filter" data-f="読書" aria-pressed="false">読書</button>
+    <button class="filter" data-f="日常" aria-pressed="false">日常</button>
+    <button class="filter" data-f="気づき" aria-pressed="false">気づき</button>
+    <span class="count" id="count"></span>
+  </div>
+  <input id="q" type="search" placeholder="ことばや本のタイトルで探す">
+  <div class="list" id="list"></div>
+  <section class="backup" aria-label="バックアップ">
+    <h2>バックアップ</h2>
+    <p>記録と写真はこの端末のブラウザに保存されています。機種変更やブラウザのデータ削除に備えて、ときどき書き出しておくと安心です。</p>
+    <div class="brow2">
+      <button class="ghost" id="exportBtn">バックアップを書き出す</button>
+      <label class="ghost">バックアップを読み込む<input type="file" id="importIn" accept="application/json,.json" hidden></label>
+    </div>
+  </section>
+</div>
+
+<div class="share"><div class="in">
+  <button class="ghost" id="selMode">選んで送る</button>
+  <button class="primary" id="copyBtn">表示中をClaude用にコピー</button>
+</div></div>
+
+<div class="toast" id="toast" role="status"></div>
+<dialog id="dlg">
+  <p style="margin:0 0 8px;font-size:.9rem">自動コピーできませんでした。長押しで全選択してコピーしてください。</p>
+  <textarea id="dlgText" readonly></textarea>
+  <button class="primary" id="dlgClose">閉じる</button>
+</dialog>
+
+<dialog id="viewer" aria-label="写真"><img id="viewerImg" alt=""></dialog>
+<script>
+const $=s=>document.querySelector(s);
+const LS="kotoba-shiori-entries";
+// ---- 写真はこの端末のIndexedDBに保存 ----
+const idb=new Promise((res,rej)=>{const q=indexedDB.open("kotoba-shiori",1);
+  q.onupgradeneeded=()=>q.result.createObjectStore("photos");q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+function tx(mode,fn){return idb.then(d=>new Promise((res,rej)=>{const t=d.transaction("photos",mode);const st=t.objectStore("photos");
+  const q=fn(st);t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)}))}
+const urlCache=new Map();
+const assets={
+  async upload(blob){const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);await tx("readwrite",st=>st.put(blob,id));return{id}},
+  async delete(id){urlCache.delete(id);await tx("readwrite",st=>st.delete(id))},
+  async get(id){return tx("readonly",st=>st.get(id))}
+};
+function setImg(im,id){if(urlCache.has(id)){im.src=urlCache.get(id);return}
+  assets.get(id).then(b=>{if(!b)return;const u=URL.createObjectURL(b);urlCache.set(id,u);im.src=u}).catch(()=>{})}
+let draftPhotos=[], db=null, entries=[], kind="読書", filter="すべて", query="", selecting=false, picked=new Set(), editingId=null;
+
+function lsLoad(){try{return JSON.parse(localStorage.getItem(LS)||"[]")}catch(e){return[]}}
+function lsSave(){try{localStorage.setItem(LS,JSON.stringify(entries))}catch(e){toast("保存できませんでした。端末の空き容量を確認してください")}}
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),1800)}
+function fmtDate(ms){const d=new Date(ms);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`}
+
+function setKind(k){kind=k;document.querySelectorAll(".kind").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));
+  $("#bookFields").style.display=k==="読書"?"flex":"none";
+  $("#phraseLabel").textContent=k==="読書"?"気に入ったフレーズ":"心に残ったことば・出来事";}
+document.querySelectorAll(".kind").forEach(b=>b.onclick=()=>setKind(b.dataset.k));
+document.querySelectorAll(".filter").forEach(b=>b.onclick=()=>{filter=b.dataset.f;
+  document.querySelectorAll(".filter").forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
+$("#q").oninput=e=>{query=e.target.value.trim();render()};
+
+// ---- tabs ----
+function showTab(h){$("#tabMemo").setAttribute("aria-selected",!h);$("#tabHabit").setAttribute("aria-selected",h);
+  $("#memoPanel").hidden=h;$("#habitPanel").hidden=!h}
+$("#tabMemo").onclick=()=>showTab(false);$("#tabHabit").onclick=()=>showTab(true);
+// ---- habit ----
+const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const entryDay=e=>e.date||dkey(new Date(e.createdAt));
+let hEditingId=null;
+function hClear(keepBook){$("#hPages").value="";$("#hPhrase").value="";$("#hNote").value="";$("#hDate").value=dkey(new Date());
+  if(!keepBook)$("#hBook").value="";$("#hMore").open=false;hEditingId=null;$("#hEditingNote").style.display="none";$("#hSave").textContent="今日の読書を記録"}
+function hStartEdit(e){showTab(true);hEditingId=e.id;$("#hBook").value=e.book||"";$("#hPages").value=e.pagesRead||"";
+  $("#hDate").value=entryDay(e);$("#hPhrase").value=e.phrase||"";$("#hNote").value=e.note||"";
+  $("#hMore").open=!!(e.phrase||e.note);$("#hEditingNote").style.display="block";$("#hSave").textContent="更新する";window.scrollTo({top:0,behavior:"smooth"})}
+$("#hCancel").onclick=()=>hClear(false);
+$("#hSave").onclick=async()=>{
+  const pages=parseInt(($("#hPages").value||"").replace(/[^0-9０-９]/g,"").replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)),10);
+  const book=$("#hBook").value.trim();
+  if(!book){toast("本のタイトルを入れてください");return}
+  if(!pages||pages<1){toast("読んだページ数を入れてください");return}
+  const date=$("#hDate").value||dkey(new Date());
+  const now=new Date();const [y,m,d]=date.split("-").map(Number);
+  const at=new Date(y,m-1,d,now.getHours(),now.getMinutes(),now.getSeconds()).getTime();
+  const data={kind:"読書",book,page:"",pagesRead:pages,date,phrase:$("#hPhrase").value.trim(),note:$("#hNote").value.trim(),photos:[]};
+  $("#hSave").disabled=true;
+  try{
+    if(hEditingId){const old=entries.find(e=>e.id===hEditingId);const next={...old,...data,photos:old.photos||[],createdAt:date===entryDay(old)?old.createdAt:at,updatedAt:Date.now()};
+      if(db)await db.collection("entries").doc(hEditingId).set(next);else{entries=entries.map(e=>e.id===hEditingId?next:e);lsSave();render()}
+      toast("更新しました");hClear(false)}
+    else{const id="e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const next={...data,id,createdAt:at};
+      if(db)await db.collection("entries").doc(id).set(next);else{entries.unshift(next);lsSave();render()}
+      toast(`${pages}ページ、記録しました`);hClear(true)}
+  }catch(err){toast("保存できませんでした。もう一度お試しください")}
+  $("#hSave").disabled=false;
+};
+function renderHabit(){
+  const reads=entries.filter(e=>e.pagesRead>0);
+  const byDay={};reads.forEach(e=>{const k=entryDay(e);byDay[k]=(byDay[k]||0)+(e.pagesRead||0)});
+  // streak (today or yesterday start)
+  let d=new Date();let streak=0;if(!(dkey(d) in byDay))d.setDate(d.getDate()-1);
+  while(dkey(d) in byDay){streak++;d.setDate(d.getDate()-1)}
+  const now=new Date();const ym=dkey(now).slice(0,7);
+  const mDays=Object.keys(byDay).filter(k=>k.startsWith(ym)).length;
+  const mPages=reads.filter(e=>entryDay(e).startsWith(ym)).reduce((a,e)=>a+(e.pagesRead||0),0);
+  $("#sStreak").textContent=streak;$("#sDays").textContent=mDays;$("#sPages").textContent=mPages;
+  const readToday=dkey(now) in byDay;
+  $("#cheer").textContent=readToday?"今日も読めました。この調子で。":streak?"今日も1ページだけ読んで、記録をつなげましょう。":"1ページからでOK。今日の読書を記録してみましょう。";
+  // heatmap
+  const g=$("#grid");g.innerHTML="";const start=new Date(now);start.setDate(start.getDate()-start.getDay()-7*15);
+  for(let i=0;i<16*7;i++){const c=new Date(start);c.setDate(start.getDate()+i);const el=document.createElement("span");el.className="cell";
+    if(c>now){el.style.visibility="hidden"}else{const k=dkey(c),v=byDay[k];
+      if(k in byDay)el.dataset.l=v>=30?3:v>=10?2:1;if(k===dkey(now))el.classList.add("today");
+      el.title=`${c.getMonth()+1}/${c.getDate()}${k in byDay?"："+(v?v+"ページ":"メモあり"):""}`}
+    g.append(el)}
+  // per book
+  const tot={};reads.forEach(e=>{if(!e.book)return;tot[e.book]=tot[e.book]||{p:0,last:0};tot[e.book].p+=e.pagesRead||0;tot[e.book].last=Math.max(tot[e.book].last,e.createdAt)});
+  const bl=$("#bookList");bl.innerHTML="";const arr=Object.entries(tot).sort((a,b)=>b[1].last-a[1].last);
+  if(!arr.length)bl.innerHTML='<p class="empty" style="padding:8px">まだありません。</p>';
+  arr.forEach(([b,v])=>{const r=document.createElement("div");r.className="brow";const a=document.createElement("span");a.textContent=`『${b}』`;
+    const c=document.createElement("span");c.textContent=`${v.p}ページ`;r.append(a,c);bl.append(r)});
+}
+
+function visible(){return entries.slice().sort((a,b)=>b.createdAt-a.createdAt).filter(e=>(filter==="すべて"||e.kind===filter)&&
+  (!query||[e.book,e.phrase,e.note].join(" ").includes(query)))}
+
+function render(){
+  const list=$("#list");list.innerHTML="";const v=visible();
+  $("#count").textContent=`${v.length}件`;
+  const books=[...new Set(entries.map(e=>e.book).filter(Boolean))];
+  $("#books").innerHTML=books.map(b=>`<option>`).join("");
+  [...$("#books").children].forEach((o,i)=>o.value=books[i]);
+  if(!v.length){list.innerHTML=`<p class="empty">${entries.length?"当てはまる記録はありません。":"まだ記録がありません。上のフォームから最初の一枚を残しましょう。"}</p>`}
+  v.forEach(e=>{
+    const el=document.createElement("article");el.className="entry";el.dataset.k=e.kind;
+    const m=document.createElement("div");m.className="meta";
+    const k=document.createElement("span");k.className="k";k.textContent=e.kind;
+    const d=document.createElement("span");d.textContent=fmtDate(e.createdAt)+(e.pagesRead?"　読書記録":"");m.append(k,d);el.append(m);
+    if(e.book){const b=document.createElement("div");b.className="book";b.textContent=`『${e.book}』${e.page?" p."+e.page:""}`;el.append(b)}
+    if(e.pagesRead){const l=document.createElement("div");l.className="logline";const b=document.createElement("b");b.textContent=e.pagesRead;
+      l.append(b,document.createTextNode("ページ読んだ"));el.append(l)}
+    if(e.phrase){const p=document.createElement("div");p.className="phrase";p.textContent=e.phrase;el.append(p)}
+    if(e.photos&&e.photos.length){const g=document.createElement("div");g.className="photos";
+      e.photos.forEach(id=>{const im=document.createElement("img");setImg(im,id);im.alt="記録の写真";
+        if(e.photos.length===1)im.className="one";im.onclick=()=>{$("#viewerImg").src=im.src;$("#viewer").showModal()};g.append(im)});el.append(g)}
+    if(e.note){const n=document.createElement("div");n.className="note";n.textContent=e.note;el.append(n)}
+    if(selecting){const c=document.createElement("input");c.type="checkbox";c.className="pick";c.checked=picked.has(e.id);
+      c.setAttribute("aria-label","この記録を選ぶ");c.onchange=()=>{c.checked?picked.add(e.id):picked.delete(e.id);updateCopyLabel()};el.append(c)}
+    else{const a=document.createElement("div");a.className="acts";
+      a.append(btn("コピー",()=>copy(format([e]))),btn("編集",()=>e.pagesRead?hStartEdit(e):startEdit(e)),delBtn(e));el.append(a)}
+    list.append(el)});
+  updateCopyLabel();renderHabit();
+}
+function delBtn(e){const b=document.createElement("button");b.textContent="削除";let armed=false,t;
+  b.onclick=()=>{if(!armed){armed=true;b.textContent="もう一度押すと削除";b.classList.add("danger");
+      t=setTimeout(()=>{armed=false;b.textContent="削除";b.classList.remove("danger")},3000);return}
+    clearTimeout(t);b.disabled=true;remove(e)};return b}
+function btn(t,f){const b=document.createElement("button");b.textContent=t;b.onclick=f;return b}
+function updateCopyLabel(){$("#copyBtn").textContent=selecting?`選んだ${picked.size}件をコピー`:"表示中をClaude用にコピー";
+  $("#selMode").textContent=selecting?"やめる":"選んで送る"}
+
+function format(arr){
+  return arr.slice().sort((a,b)=>a.createdAt-b.createdAt).map(e=>{
+    const lines=[`【${e.kind}】${fmtDate(e.createdAt)}`];
+    if(e.book)lines.push(`本：『${e.book}』${e.page?" p."+e.page:""}`);
+    if(e.pagesRead)lines.push(`読んだページ：${e.pagesRead}ページ`);
+    if(e.phrase)lines.push(`${e.kind==="読書"?"フレーズ":"ことば・出来事"}：「${e.phrase}」`);
+    if(e.note)lines.push(`気づき：${e.note}`);
+    if(e.photos&&e.photos.length)lines.push(`写真：${e.photos.length}枚あり`);
+    return lines.join("\n")}).join("\n\n");
+}
+async function copy(text){
+  if(!text){toast("コピーする記録がありません");return}
+  try{await navigator.clipboard.writeText(text);toast("コピーしました。Claudeに貼り付けてください");return}catch(e){}
+  const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.append(ta);ta.select();
+  let ok=false;try{ok=document.execCommand("copy")}catch(e){}ta.remove();
+  if(ok){toast("コピーしました。Claudeに貼り付けてください");return}
+  $("#dlgText").value=text;$("#dlg").showModal();
+}
+$("#viewer").onclick=()=>$("#viewer").close();
+$("#dlgClose").onclick=()=>$("#dlg").close();
+$("#copyBtn").onclick=()=>copy(format(selecting?entries.filter(e=>picked.has(e.id)):visible()));
+$("#selMode").onclick=()=>{selecting=!selecting;picked.clear();render()};
+
+function clearForm(){["book","page","phrase","note"].forEach(id=>$("#"+id).value="");editingId=null;draftPhotos=[];renderThumbs();
+  $("#editingNote").style.display="none";$("#save").textContent="記録する"}
+function startEdit(e){showTab(false);editingId=e.id;setKind(e.kind);$("#book").value=e.book||"";$("#page").value=e.page||"";
+  $("#phrase").value=e.phrase||"";$("#note").value=e.note||"";draftPhotos=[...(e.photos||[])];renderThumbs();$("#editingNote").style.display="block";
+  $("#save").textContent="更新する";window.scrollTo({top:0,behavior:"smooth"})}
+$("#cancelEdit").onclick=clearForm;
+
+$("#save").onclick=async()=>{
+  const data={kind,book:kind==="読書"?$("#book").value.trim():"",page:kind==="読書"?$("#page").value.trim():"",
+    phrase:$("#phrase").value.trim(),note:$("#note").value.trim(),photos:[...draftPhotos]};
+  if(!data.phrase&&!data.note&&!data.photos.length){toast("フレーズ・気づき・写真のどれかを入れてください");return}
+  $("#save").disabled=true;
+  try{
+    if(editingId){const old=entries.find(e=>e.id===editingId);const next={...old,...data,updatedAt:Date.now()};
+      const gone=(old.photos||[]).filter(id=>!data.photos.includes(id));
+      if(db){await db.collection("entries").doc(editingId).set(next)}else{entries=entries.map(e=>e.id===editingId?next:e);lsSave();render()}
+      gone.forEach(delAsset);toast("更新しました")}
+    else{const id="e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      const next={...data,id,createdAt:Date.now()};
+      if(db){await db.collection("entries").doc(id).set(next)}else{entries.unshift(next);lsSave();render()}
+      toast("記録しました")}
+    const keepBook=kind==="読書"&&!editingId?$("#book").value:"";clearForm();$("#book").value=keepBook;
+  }catch(err){toast(err&&err.code==="quota_exceeded"?"保存上限に達しました。古い記録を削除してください":"保存できませんでした。もう一度お試しください")}
+  $("#save").disabled=false;
+};
+async function remove(e){
+    try{if(db){await db.collection("entries").doc(e.id).delete();(e.photos||[]).forEach(delAsset)}else{entries=entries.filter(x=>x.id!==e.id);lsSave();render()}toast("削除しました")}
+  catch(err){toast("削除できませんでした。もう一度お試しください");render()}
+}
+
+function delAsset(id){assets.delete(id).catch(()=>{})}
+function renderThumbs(){const t=$("#thumbs");t.innerHTML="";
+  draftPhotos.forEach((id,i)=>{const d=document.createElement("div");d.className="thumb";
+    const im=document.createElement("img");setImg(im,id);im.alt="追加した写真";
+    const x=document.createElement("button");x.textContent="×";x.setAttribute("aria-label","この写真を外す");
+    x.onclick=()=>{draftPhotos.splice(i,1);renderThumbs()};d.append(im,x);t.append(d)})}
+function shrink(file){return new Promise(res=>{const url=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{const M=1600,k=Math.min(1,M/Math.max(im.width,im.height));const c=document.createElement("canvas");
+    c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);c.toBlob(b=>res(b||file),"image/jpeg",.85)};
+  im.onerror=()=>{URL.revokeObjectURL(url);res(file)};im.src=url})}
+$("#photoIn").onchange=async ev=>{
+  const files=[...ev.target.files];ev.target.value="";if(!assets||!files.length)return;
+  $("#save").disabled=true;toast("写真をアップロード中…");
+  let ok=0;for(const f of files){try{const b=await shrink(f);const r=await assets.upload(b);
+      draftPhotos.push(r.id);ok++;renderThumbs()}
+    catch(err){toast("写真を追加できませんでした（容量か形式を確認してください）")}}
+  $("#save").disabled=false;if(ok)toast(`写真を${ok}枚追加しました`);
+};
+
+setKind("読書");hClear(false);entries=lsLoad();render();
+$("#status").textContent="（この端末に保存）";$("#photoPick").classList.add("on");
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+
+// ---- バックアップ ----
+const toDataURL=b=>new Promise(res=>{const f=new FileReader();f.onload=()=>res(f.result);f.readAsDataURL(b)});
+$("#exportBtn").onclick=async()=>{
+  toast("バックアップを作成中…");const photos={};
+  for(const e of entries)for(const id of (e.photos||[])){try{const b=await assets.get(id);if(b)photos[id]=await toDataURL(b)}catch(err){}}
+  const blob=new Blob([JSON.stringify({app:"kotoba-shiori",version:1,exportedAt:Date.now(),entries,photos})],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`kotoba-shiori-backup-${dkey(new Date())}.json`;
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast("バックアップを書き出しました")};
+$("#importIn").onchange=async ev=>{
+  const f=ev.target.files[0];ev.target.value="";if(!f)return;
+  try{const data=JSON.parse(await f.text());if(data.app!=="kotoba-shiori")throw 0;
+    for(const [id,url] of Object.entries(data.photos||{})){const b=await (await fetch(url)).blob();await tx("readwrite",st=>st.put(b,id))}
+    const have=new Set(entries.map(e=>e.id));let n=0;
+    for(const e of data.entries||[])if(!have.has(e.id)){entries.push(e);n++}
+    lsSave();render();toast(`${n}件の記録を読み込みました`)}
+  catch(err){toast("このファイルは読み込めませんでした")}
+};
+</script>
+</body>
+</html>
